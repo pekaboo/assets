@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+    <title>未完成业务统计</title><!--<link rel="stylesheet" href="https://f2.antv.vision/styles.d5c21d30d18196956445.css">-->
+    <link rel="stylesheet" href="https://rpt-admin.j-net.cn/layui/css/layui.css"/>
+    <script type="text/javascript" charset="utf-8" src="https://rpt-admin.j-net.cn/layui/layui.all.js"></script>
+    <script src="https://gw.alipayobjects.com/os/antv/assets/f2/3.4.2/f2-all.js"></script>
+    <!--<script src="https://cdn.jsdelivr.net/npm/@antv/f2@3.6.3/build/f2.min.js"></script>-->
+
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.4/lodash.min.js"></script>
+    <!--<script src="https://cdn.jsdelivr.net/npm/insert-css"></script>-->
+    <script src="f2-self.js"></script>
+    <!--<script src="https://gw.alipayobjects.com/os/antv/assets/f2/3.4.2/f2.min.js"></script> -->
+    <!--<link rel="stylesheet" href=" ./dist/css/sm.min.css">-->
+    <script src='//cdn.bootcss.com/jquery/3.1.1/jquery.min.js'></script>
+    <!--<script src=' ./dist/js/sm.js'></script>-->
+    <style>
+
+        body {
+            background-color: #F2F2F2;
+        }
+        .gray-block {
+            display: block;
+            padding: 10px 15px;
+            background-color: #f8f8f8;
+            color: #666;
+            border-radius: 2px;
+            transition: all .3s;
+            -webkit-transition: all .3s;
+        }
+
+        .gray-block h3 {
+            padding-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .gray-block p cite {
+            font-style: normal;
+            font-size: 30px;
+            font-weight: 300;
+            color: #397cea;
+        }
+        .content-header {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<!-- 你的HTML代码 -->
+<div style="padding: 15px;">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <!--<div class="layui-card-header content-header" id="title">-->
+                  <!--今日vova-->
+                <!--</div>-->
+                <div class="layui-card-body">
+                    <!-- 小卡片 -->
+                    <ul class="layui-row layui-col-space10">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">日期</label>
+                            <div class="layui-input-inline" style="width:50%">
+                                <input type="text" class="layui-input" readonly="readonly" style="ime-mode: disabled"
+                                       id="range_date1" placeholder="yyyy-MM-dd"/>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">-</label>
+                            <div class="layui-input-inline" style="width:50%">
+                                <input type="text" class="layui-input" readonly="readonly" style="ime-mode: disabled"
+                                       id="range_date2" placeholder="yyyy-MM-dd"/>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label"></label>
+                            <button type="button" class="layui-btn layui-btn-normal" id="query"><i
+                                    class="layui-icon"></i> &nbsp;查询
+                            </button>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md12">
+            <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+                <legend>入仓</legend>
+                <!--<legend><span style="color:grey;font-size:14px">实际入仓数据</span></legend>-->
+            </fieldset>
+        </div>
+
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <!-- 小卡片 -->
+                    <ul class="layui-row layui-col-space10">
+                        <li class="layui-col-xs6">
+                            <div>
+                                <h3>处理进度</h3>
+                                <canvas id='b-order'></canvas>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    卖家入仓
+                </div>
+                <div class="layui-card-body">
+                    <!-- 小卡片 -->
+                    <ul class="layui-row layui-col-space10">
+                        <li class="layui-col-xs6">
+                            <div class="gray-block">
+                                <h3>订单数量</h3>
+                                <p><cite id="mj_dd">-</cite>&nbsp;单</p>
+                            </div>
+                        </li>
+                        <li class="layui-col-xs6">
+                            <div class="gray-block">
+                                <h3>已处理</h3>
+                                <p><cite id="mj_success">-</cite>&nbsp;单</p>
+                            </div>
+                        </li>
+                        <li class="layui-col-xs6">
+                            <div class="gray-block">
+                                <h3>未处理</h3>
+                                <p><cite id="mj_to">-</cite>&nbsp;单</p>
+                            </div>
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    拼多多入仓
+                </div>
+                <div class="layui-card-body">
+                    <!-- 小卡片 -->
+                    <ul class="layui-row layui-col-space10">
+                        <li class="layui-col-xs6">
+                            <div class="gray-block">
+                                <h3>订单数量</h3>
+                                <p><cite id="pdd_dd">-</cite>&nbsp;单</p>
+                            </div>
+                        </li>
+                        <li class="layui-col-xs6">
+                            <div class="gray-block">
+                                <h3>已处理</h3>
+                                <p><cite id="pdd_success">-</cite>&nbsp;单</p>
+                            </div>
+                        </li>
+                        <li class="layui-col-xs6">
+                            <div class="gray-block">
+                                <h3>未处理</h3>
+                                <p><cite id="pdd_to">-</cite>&nbsp;单</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    集货入仓
+                </div>
+                <div class="layui-card-body">
+                    <!-- 小卡片 -->
+                    <ul class="layui-row layui-col-space10">
+                        <li class="layui-col-xs6">
+                            <div class="gray-block">
+                                <h3>订单数量</h3>
+                                <p><cite id="jh_dd">-</cite>&nbsp;单</p>
+                            </div>
+                        </li>
+                        <li class="layui-col-xs6">
+                            <div class="gray-block">
+                                <h3>已处理</h3>
+                                <p><cite id="jh_success">-</cite>&nbsp;单</p>
+                            </div>
+                        </li>
+                        <li class="layui-col-xs6">
+                            <div class="gray-block">
+                                <h3>未处理</h3>
+                                <p><cite id="jh_to">-</cite>&nbsp;单</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-col-md12">
+            <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+                <legend>出仓</legend>
+            </fieldset>
+        </div>
+
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <!-- 小卡片 -->
+                    <ul class="layui-row layui-col-space10">
+                        <li class="layui-col-xs6">
+                            <div>
+                                <h3>处理进度</h3>
+                                <canvas id='b-outorder'></canvas>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    仓储出仓
+                </div>
+                <div class="layui-card-body">
+                    <!-- 小卡片 -->
+                    <ul class="layui-row layui-col-space10">
+                        <li class="layui-col-xs6">
+                            <div class="gray-block">
+                                <h3>订单数量</h3>
+                                <p><cite id="cc_dd">-</cite>&nbsp;单</p>
+                            </div>
+                        </li>
+                        <li class="layui-col-xs6">
+                            <div class="gray-block">
+                                <h3>已处理</h3>
+                                <p><cite id="cc_success">-</cite>&nbsp;单</p>
+                            </div>
+                        </li>
+                        <li class="layui-col-xs6">
+                            <div class="gray-block">
+                                <h3>未处理</h3>
+                                <p><cite id="cc_to">-</cite>&nbsp;单</p>
+                            </div>
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    集货出仓
+                </div>
+                <div class="layui-card-body">
+                    <!-- 小卡片 -->
+                    <ul class="layui-row layui-col-space10">
+                        <li class="layui-col-xs6">
+                            <div class="gray-block">
+                                <h3>订单数量</h3>
+                                <p><cite id="jh_out_dd">-</cite>&nbsp;单</p>
+                            </div>
+                        </li>
+                        <li class="layui-col-xs6">
+                            <div class="gray-block">
+                                <h3>已处理</h3>
+                                <p><cite id="jh_out_success">-</cite>&nbsp;单</p>
+                            </div>
+                        </li>
+                        <li class="layui-col-xs6">
+                            <div class="gray-block">
+                                <h3>未处理</h3>
+                                <p><cite id="jh_out_to">-</cite>&nbsp;单</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    混合出仓
+                </div>
+                <div class="layui-card-body">
+                    <!-- 小卡片 -->
+                    <ul class="layui-row layui-col-space10">
+                        <li class="layui-col-xs6">
+                            <div class="gray-block">
+                                <h3>订单数量</h3>
+                                <p><cite id="hh_dd">-</cite>&nbsp;单</p>
+                            </div>
+                        </li>
+                        <li class="layui-col-xs6">
+                            <div class="gray-block">
+                                <h3>已处理</h3>
+                                <p><cite id="hh_success">-</cite>&nbsp;单</p>
+                            </div>
+                        </li>
+                        <li class="layui-col-xs6">
+                            <div class="gray-block">
+                                <h3>未处理</h3>
+                                <p><cite id="hh_to">-</cite>&nbsp;单</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+<script type="text/javascript">
+    //
+
+    function getDay(num, str) {
+        var today = new Date();
+        var nowTime = today.getTime();
+        var ms = 24 * 3600 * 1000 * num;
+        today.setTime(parseInt(nowTime + ms));
+        var oYear = today.getFullYear();
+        var oMoth = (today.getMonth() + 1).toString();
+        if (oMoth.length <= 1) oMoth = '0' + oMoth;
+        var oDay = today.getDate().toString();
+        if (oDay.length <= 1) oDay = '0' + oDay;
+        return oYear + str + oMoth + str + oDay;
+    }
+
+
+    function getNowFormatDate() {
+        var date = new Date();
+        var seperator1 = "-";
+        var year = date.getFullYear();
+        var month = date.getMonth() + 1;
+        var strDate = date.getDate();
+        if (month >= 1 && month <= 9) {
+            month = "0" + month;
+        }
+        if (strDate >= 0 && strDate <= 9) {
+            strDate = "0" + strDate;
+        }
+        var currentdate = year + seperator1 + month + seperator1 + strDate;
+        return currentdate;
+    }
+
+    //获取前一个月的日期
+    //入参格式：YYYY-MM-DD
+    function getPreMonthDay(date) {
+        var arr = date.split('-');
+        var year = arr[0];     //当前年
+        var month = arr[1];      //当前月
+        var day = arr[2];        //当前日
+        //验证日期格式为YYYY-MM-DD
+        // var reg = date.match(/^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$/);
+        // if ((!reg) || (month > 12) || (day > 31)) {
+        //     console.log('日期或格式有误！请输入正确的日期格式（年-月-日）');
+        //     return;
+        // }
+
+        var pre_year = year;     //前一个月的年
+        var pre_month = parseInt(month) - 1;      //前一个月的月，以下几行是上月数值特殊处理
+        if (pre_month === 0) {
+            pre_year = parseInt(pre_year) - 1;
+            pre_month = 12;
+        }
+        var pre_day = parseInt(day);       //前一个月的日，以下几行是特殊处理前一个月总天数
+        var pre_month_alldays = (new Date(pre_year, pre_month, 0)).getDate();    //巧妙处理，返回前一个月的总天数
+        if (pre_day > pre_month_alldays) {
+            pre_day = pre_month_alldays;
+        }
+        if (pre_month < 10) {   //补0
+            pre_month = '0' + pre_month;
+        }
+        if (pre_day < 10) {   //补0
+            pre_day = '0' + pre_day;
+        }
+
+        var pre_month_day = pre_year + '-' + pre_month + '-' + pre_day;
+        return pre_month_day;
+    }
+
+
+    function formatNumber(n) {
+        return String(Math.floor(n * 100) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    //
+</script>
+<script>
+
+
+    layui.use(['element', 'table', 'jquery', 'layer', 'laydate', 'form', 'laytpl'
+        , 'form', 'layedit', 'util'], function () {
+        var element = layui.element,
+            layer = layui.layer,
+            laydate = layui.laydate,
+            laytpl = layui.laytpl,
+            form = layui.form,
+            $ = layui.jquery,
+            table = layui.table,
+            jquery = layui.jquery;
+
+        // 进度条
+        function showLoad() {
+            //   var msg = ['拼命拉取数据中...','请君稍等片刻儿...'];
+            //   return layer.msg((function(){return msg[Math.floor((Math.random()*2)+1)]})(), {icon: 16,shade: [0.6, '#f5f5f5'],scrollbar: false,offset: 'auto', time:100000});
+            //   return layer.msg('拼命拉取数据中...', {icon: 16,shade: [0.6, '#f5f5f5'],scrollbar: false,offset: '320px', time:100000});
+            return layer.msg('拼命拉取数据中...', {
+                icon: 16,
+                shade: [0.6, '#f5f5f5'],
+                scrollbar: false,
+                offset: '320px',
+                time: 100000
+            });
+        }
+
+        function closeLoad(index) {
+            layer.close(index);
+        }
+
+
+        var day2 = getNowFormatDate();
+        if (new Date().getHours() < 19) {
+            day2 = getDay(-1, '-')
+            $('#title').html('昨日vova');
+        }
+        // var day1 = getPreMonthDay((day2,-1)day2);
+        var day1 = day2;
+
+
+        //常规用法
+        laydate.render({
+            elem: '#range_date1'
+            , value: day1
+        });
+        laydate.render({
+            elem: '#range_date2'
+            , value: day2
+        });
+
+        $('#query').click(function () {
+            loadmain();
+        });
+
+        function loadmain() {
+            var index = showLoad();
+            $.ajax({
+                type: "GET",      //data 传送数据类型。post 传递
+                dataType: 'json',  // 返回数据的数据类型json
+                url: "https://rpt-admin.j-net.cn/data/workprogress/in",  // yii 控制器/方法
+                cache: false,
+                data: {
+                    'begin_date': $('#range_date1').val(),
+                    'end_date': $('#range_date2').val()
+
+                },  //传送的数据
+                error: function () {
+                    alert("数据传输错误");
+                }, success: function (data) {
+                    if (data.status == 'success') {
+                        $("#jh_dd").html(data.data.statistics[0].JH_DD || 0);
+                        $("#jh_to").html(data.data.statistics[0].JH_TO || 0);
+                        $("#jh_success").html(data.data.statistics[0].JH_SUCCESS || 0);
+
+
+                        $("#mj_dd").html(data.data.statistics[0].MJ_DD || 0);
+                        $("#mj_to").html(data.data.statistics[0].MJ_TO || 0);
+                        $("#mj_success").html(data.data.statistics[0].MJ_SUCCESS || 0);
+
+                        $("#pdd_dd").html(data.data.statistics[0].PDD_DD || 0);
+                        $("#pdd_to").html(data.data.statistics[0].PDD_TO || 0);
+                        $("#pdd_success").html(data.data.statistics[0].PDD_SUCCESS || 0);
+
+                        var rate = (data.data.statistics[0].AL_SUCCESS/data.data.statistics[0].AL).toFixed(2)*100;
+                        loadHalfCircle('b-order','今天完成',rate);
+                    }
+                }
+            });
+            $.ajax({
+                type: "GET",      //data 传送数据类型。post 传递
+                dataType: 'json',  // 返回数据的数据类型json
+                url: "https://rpt-admin.j-net.cn/data/workprogress/out",  // yii 控制器/方法
+                cache: false,
+                data: {
+                    'begin_date': $('#range_date1').val(),
+                    'end_date': $('#range_date2').val()
+
+                },  //传送的数据
+                error: function () {
+                    alert("数据传输错误");
+                }, success: function (data) {
+                    if (data.status == 'success') {
+                        $("#jh_out_dd").html(data.data.statistics[0].JH_DD || 0);
+                        $("#jh_out_to").html(data.data.statistics[0].JH_TO || 0);
+                        $("#jh_out_success").html(data.data.statistics[0].JH_SUCCESS || 0);
+
+
+                        $("#cc_dd").html(data.data.statistics[0].CC_DD || 0);
+                        $("#cc_to").html(data.data.statistics[0].CC_TO || 0);
+                        $("#cc_success").html(data.data.statistics[0].CC_SUCCESS || 0);
+
+                        $("#hh_dd").html(data.data.statistics[0].HH_DD || 0);
+                        $("#hh_to").html(data.data.statistics[0].HH_TO || 0);
+                        $("#hh_success").html(data.data.statistics[0].HH_SUCCESS || 0);
+
+                        var rate = (data.data.statistics[0].AL_SUCCESS/data.data.statistics[0].AL).toFixed(2)*100;
+                        loadHalfCircle('b-outorder','今天完成',rate);
+                        closeLoad(index);
+                    }
+                }
+            });
+        }
+
+        function init() {
+            loadmain();
+        }
+        init();
+    });
+
+</script> <!--你的tpl-->
+<script type="text/html" id="sourceTpl"></script>
+</body>
+</html>
