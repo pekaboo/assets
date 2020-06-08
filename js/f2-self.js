@@ -1,4 +1,4 @@
-/* layui进度条   
+/* layui进度条
 *  需要引入      <link rel="stylesheet" href="https://rpt-admin.j-net.cn/layui/css/layui.css"/>
                           <script type="text/javascript" charset="utf-8" src="https://rpt-admin.j-net.cn/layui/layui.all.js"></script>
 * */
@@ -84,7 +84,7 @@ function formatNumber(n) {
 
 
 /*  f2 pie
-* 需要引入 
+* 需要引入
     <script src="https://gw.alipayobjects.com/os/antv/assets/f2/3.4.2/f2-all.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.4/lodash.min.js"></script>
 * json:json 数组
@@ -159,9 +159,9 @@ function loadPie(json,id,title,value,num,ext='#'){
 }
 /*
 *  柱状图
-  * loadDay(data.data.day,'z-day','DD','AMOUNT',12); // 显示结尾12个数
+  * loadZhu(data.data.month,'z-rk','MM','AMOUNT','YY-MM','#%',12); 显示结尾12个数
 * */
-function loadZhu(json,id,title,value,ext='#',show=12){
+function loadZhu(json,id,title,value,fmt='MM-DD',ext='#',show=12){
     const data = []
     for( j = 0,len=json.length; j < len; j++){
         data.push({
@@ -178,7 +178,7 @@ function loadZhu(json,id,title,value,ext='#',show=12){
     //         originValues.push(obj.value);
     //     }
     // });
-    for(var i=data.length-show; i<data.length ;i++){
+    for(var i=(data.length<show?0:data.length-show); i<data.length ;i++){
         originTitles.push(data[i].title);
         originValues.push(data[i].value);
     }
@@ -194,7 +194,7 @@ function loadZhu(json,id,title,value,ext='#',show=12){
             tickCount: 5,
             type: 'timeCat',
             values: originTitles,
-            mask: 'MM-DD'
+            mask: fmt
         },
         value: {
             tickCount: 5
@@ -371,4 +371,151 @@ function loadHalfCircle(id,title,value){
         html: '<div style="width: 120px;color: #FEC556;white-space: nowrap;text-align:center;">' + '<p style="font-size: 18px;margin:0;">'+title+'</p>' + '<p class="text-'+id+'" style="font-size: 30px;margin:0;font-weight: bold;">0</p>' + '</div>'
     });
     chart.render();
+}
+
+//折线图 对比折线图  https://f2.antv.vision/zh/examples/line/multiple
+function loadZheMulty(json,id,title,value,type,fmt='MM-DD',ext='#'){
+    const data = []
+    for( j = 0,len=json.length; j < len; j++){
+        data.push({
+            'title':json[j][title],
+            'value':json[j][value],
+            "type": json[j][type]
+        });
+
+    }
+
+    const chart = new F2.Chart({
+        id: id,
+        pixelRatio: window.devicePixelRatio
+    });
+    chart.source(data);
+    chart.scale('title', {
+        type: 'timeCat',
+        tickCount: 3,
+        mask: fmt
+    });
+    chart.scale('value', {
+        tickCount: 5
+    });
+    chart.axis('title', {
+        label: function label(text, index, total) {
+            // 只显示每一年的第一天
+            const textCfg = {};
+            if (index === 0) {
+                textCfg.textAlign = 'left';
+            } else if (index === total - 1) {
+                textCfg.textAlign = 'right';
+            }
+            return textCfg;
+        }
+    });
+    chart.tooltip({
+        custom: true, // 自定义 tooltip 内容框
+        onChange: function onChange(obj) {
+            const legend = chart.get('legendController').legends.top[0];
+            const tooltipItems = obj.items;
+            const legendItems = legend.items;
+            const map = {};
+            legendItems.forEach(function(item) {
+                map[item.name] = _.clone(item);
+            });
+            tooltipItems.forEach(function(item) {
+                const name = item.name;
+                const value = ext.replace("#",item.value)+'('+item.title+')';
+                if (map[name]) {
+                    map[name].value = value;
+                }
+            });
+            legend.setItems(_.values(map));
+        },
+        onHide: function onHide() {
+            const legend = chart.get('legendController').legends.top[0];
+            legend.setItems(chart.getLegendItems().country);
+        }
+    });
+    chart.line().position('title*value').color('type');
+    chart.render();
+
+}
+
+//折线图
+function loadZhe(json,id,title,value,fmt='MM-DD',ext='#'){
+    const data = []
+    for( j = 0,len=json.length; j < len; j++){
+        data.push({
+            'title':json[j][title],
+            'value':json[j][value]
+        });
+    }
+
+    console.log(data)
+    // const min = data[data.length-show-1].release;
+    // const max = data[data.length-1].release;
+
+    const chart = new F2.Chart({
+        id: id,
+        pixelRatio: window.devicePixelRatio
+    });
+    chart.source(data, {
+        title: {
+            // min: min,
+            // max: max,
+            type: 'timeCat',
+            mask: fmt
+        }
+    });
+    chart.tooltip({
+        showCrosshairs: true,
+        showItemMarker: true,
+        background: {
+            radius: 2,
+            fill: '#595959',
+            padding: [ 3, 5 ]
+        },
+        nameStyle: {
+            fill: '#fff'
+        },
+        onShow: function onShow(ev) {
+            const items = ev.items;
+            items[0].name = items[0].title;
+            items[0].value = ext.replace("#",items[0].value);
+        },
+
+        // showCrosshairs: true,
+        // custom: true,
+        // showXTip: true,
+        // showYTip: true,
+        // snap: true,
+        // crosshairsType: 'xy',
+        // crosshairsStyle: {
+        //     lineDash: [2]
+        // }
+    });
+    chart.line().position('title*value');
+    chart.point().position('title*value').style({
+        lineWidth: 1,
+        stroke: '#fff'
+    });
+
+    chart.interaction('pan');
+    // 定义进度条
+    chart.scrollBar({
+        mode: 'x',
+        xStyle: {
+            offsetY: -5
+        }
+    });
+
+    // 绘制 tag
+    chart.guide().tag({
+        position: [ 1969, 1344 ],
+        withPoint: false,
+        content: '1,344',
+        limitInPlot: true,
+        offsetX: 5,
+        direct: 'cr'
+    });
+    chart.render();
+
 }
