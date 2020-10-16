@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>代码终结者</title>
+
+
+    <!--bootstrapcdn-->
+    <!--<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">-->
+    <!--<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"  ></script>-->
+    <!--<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"  ></script>-->
+
+    <!--jquery-->
+    <!--<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>-->
+
+
+    <!--引入 element-ui 的样式，-->
+    <!--<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-ui@2.11.1/lib/theme-chalk/index.css">-->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+
+    <!--vue-->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+    <!--<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>-->
+
+
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+    <!--lodash-->
+    <script  src="https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js"></script>
+    <!--<script  src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.15/lodash.js"></script>-->
+
+
+    <!--codemirror-->
+    <script  src="https://cdn.jsdelivr.net/npm/codemirror@5.41.0/lib/codemirror.min.js"></script>
+    <script  src="https://cdn.jsdelivr.net/npm/codemirror@5.41.0/mode/javascript/javascript.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.41.0/lib/codemirror.min.css">
+    
+    
+    
+    <!--axios-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+
+    <style>
+        .el-card .el-row{
+            margin-bottom: 5px;
+        }
+        .el-input{
+            font-family: "Microsoft YaHei UI";
+        }
+    </style>
+</head>
+<body>
+
+<el-card id="app">
+    <el-row :gutter="20" >
+        <el-col :span="18">
+            <el-input v-model="quick"    type="textarea" :rows="2"  placeholder="快速">{
+            </el-input>
+        </el-col>
+        <el-col :span="6">
+            <el-button  type="primary" @click="quickAdd()">快速添加</el-button>
+        </el-col>
+    </el-row>
+
+    <template v-for="(item, index)  in kvs"  >
+        <el-row  :gutter="20">
+                <el-col :span="6"> <el-input   v-model.lazy="item.key" placeholder="请输入字段"></el-input></el-col>
+                <!--<el-col :span="6"> <el-input v-model:value="item.value" placeholder="请输入类型"></el-input></el-col>-->
+                <el-col :span="6">
+                    <el-select  v-model.lazy ="item.value" placeholder="请选择">
+                        <el-option
+                                v-for="(itm,index)  in select"
+                                :key="select[index]"
+                                :label="select[index]"
+                                v-model:value="select[index]">
+                        </el-option>
+                    </el-select>
+                    <el-button type="danger" icon="el-icon-delete sm"  @click="del(item.key)"  circle></el-button>
+                </el-col>
+                <el-col :span="1">
+                        </el-col>
+        </el-row>
+    </template>
+    <el-row >
+        <el-button  type="primary" @click="add()">添加</el-button>
+        <el-button  type="primary" @click="ok()">OK</el-button>
+    </el-row>
+
+    <el-row>
+        <el-col :span="18">
+            <el-input v-model="result"  name="result" type="textarea" :rows="8"  placeholder="结果">
+            </el-input>
+
+        </el-col>
+    </el-row>
+    <el-row>
+    <h3 >{{hitokoto}}</h3>
+    </el-row>
+</el-card>
+
+<script>
+
+    String.prototype.replaceAll = function (o,n) {
+        return this.replace(new RegExp(o,'g'),n);
+    };
+    var app = new Vue({
+        el: '#app',
+        data: {
+            select:["string","int?","DateTime","DataRowView","DataTable","bool?"],
+            kvs:[
+                {key:"",value:"string"}
+            ],
+            tmp:`        private #TYPE# #KSM#;
+        public #TYPE# #KEY#
+        {
+            get { return #KSM#; }
+            set
+            {
+                #KSM# = value;
+                this.RaisePropertyChanged("#KEY#");
+            }
+        }`,
+            key:"Typename",
+            type:"string",
+            result:"",
+            quick:"",
+            
+            
+            
+            hitokoto:''
+        },
+        methods:{
+          ok(){
+              // console.log(this.kvs)
+              this.result = ''
+              this.kvs.forEach(i=>{
+                  let KSM = '_'+_.camelCase(i.key)
+                  this.result += this.tmp.replaceAll("#TYPE#" ,i.value).replaceAll("#KSM#",KSM).replaceAll("#KEY#",_.capitalize(i.key))+"\r\n"
+              });
+          },
+            add(){
+              this.kvs.push(
+                  {key:"",value:"string"}
+              )
+            },
+            del(key){
+              console.log(key)
+                this.kvs.forEach(i=>{
+                     if((i.key)==key){
+                         this.kvs.pop(i)
+                    }
+                });
+                // delete this.kvs[idx]
+            },
+            quickAdd(){
+              this.kvs = []
+              let r = this.quick.split("\n")
+                r.forEach(i=>{
+                    this.kvs.push(
+                        {key:i,value:"string"}
+                    )
+                })
+                this.result = ''
+                this.kvs.forEach(i=>{
+                    let KSM = '_'+_.camelCase(i.key)
+                    this.result += this.tmp.replaceAll("#TYPE#" ,i.value).replaceAll("#KSM#",KSM).replaceAll("#KEY#",_.capitalize(i.key))+"\r\n"
+                });
+
+            }
+        },
+        created () {
+          axios
+            .get('https://international.v1.hitokoto.cn/')
+            .then(response => (  this.hitokoto = response.data.hitokoto))
+            .catch(function (error) { // 请求失败处理
+              console.log(error);
+            });
+        },
+
+        // created(){
+        //     let editor = CodeMirror.fromTextArea(document.getElementById("result"), {
+        //         mode: 'javascript', //设置编译器编程语言关联内容，需要引入mode/javascript/javascript.js
+        //         lineNumbers: true, //显示行号
+        //         smartIndent: true, //自动缩进是否开启
+        //         indentUnit: 4, //缩进单位
+        //         theme: 'monokai', //设置主题
+        //         styleActiveLine: true, //设置光标所在行高亮，需要引入addon/selection/active-line.js
+        //         keyMap: 'sublime', // 快捷键，default使用默认快捷键，除此之外包括emacs，sublime，vim快捷键，使用需引入工具,keymap/sublime.js
+        //         extraKeys: {'Ctrl-Q': 'autocomplete'}, //设置快捷键
+        //     });
+        // }
+
+    })
+
+
+</script>
+</body>
+</html>
